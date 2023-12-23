@@ -1,0 +1,78 @@
+====================================================================================================
+CURSO API REST QUARKUS - PROJECT
+====================================================================================================
+
+
+Projeto
+----------------------------------------------------------------------------------------------------
+- Abrir o 'Spring Tools Suite' ou 'Eclipse'
+
+- Selecionar Help -> Eclipse Marketplace
+
+- Procurar pelo plugin 'Quarkus' e efetuar a instalação do mesmo
+
+- Selecionar File > New > Other > Quarkus
+
+- Preencher os seguintes campos
+
+  Quarkus stream: <selecionar-versao-desejada>
+  Project type: <selecionar-maven-ou-gradle>
+  Project name: moviebook
+  
+- Clicar no botão 'Next' e preencher os campos
+
+  Artifact Id: moviebook
+  Group Id: com.ctseducare
+  Version: 0.0.1-SNAPSHOT
+  Class name: com.ctseducare.moviebook.StatusResource
+  Path: /status
+
+- Clicar no botão 'Finish'
+
+
+Configurações
+----------------------------------------------------------------------------------------------------
+- Abrir o arquivo 'StatusResource' e alterar o texto
+
+    "Hello from RESTEasy Reactive"
+    
+  para
+  
+    "I am UP!"
+
+- Remover o folder 'META-INF' do folder 'src/main/resources'
+
+- Remover o arquivo 'StatusResourceIT.java' do pacote 'com.ctseducare.moviebook' do folder 'src/test/java'
+
+- Abrir o arquivo 'StatusResourceTest' e alterar o texto
+
+    "Hello from RESTEasy Reactive"
+    
+  para
+  
+    "I am UP!"
+
+- Remover o plugin 'maven-failsafe-plugin' do arquivo 'pom.xml'
+
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Selecionar menu Run > Run configurations
+
+- Selecionar 'Quarkus application' e clicar no ícone New launch configuration'
+
+- Preencher os campos:
+
+  Name: moviebook
+  Project: moviebook
+  Profile: quarkus:dev
+
+- Clicar no botão 'Run'
+
+- Utilizando um navegador Web acessar o endereço
+
+  http://localhost:8080/status
+  
+  Obs: A frase 'I am UP!' deve ser exibida no navegador.
+
+

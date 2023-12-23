@@ -1,0 +1,63 @@
+====================================================================================================
+CURSO API REST QUARKUS - CRUD - READ
+====================================================================================================
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'readAll' no arquivo 'MovieService.java'
+
+    ...
+    public List<Movie> readAll() {
+        return repository.findAll().list();
+    }
+    ...
+    
+
+Controller
+----------------------------------------------------------------------------------------------------
+- Adicionar o endpoint 'readAll' na classe 'MovieResoure'
+
+    ...
+    @GET
+    public Response readAll() {
+        return Response.ok(service.readAll()).build();
+    }
+    ...
+    
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Criar uma requisição GET
+
+    URL:
+  
+      http://localhost:8080/movies
+  
+    Payload:
+  
+      N.A.
+
+    Resposta:
+  
+    [
+      {
+        "id": 1,
+        "title": "Momentum",
+        "genre": "Ação",
+        "year": 2015,
+        "mainActor": "Olga Kurylenko",
+        "watchedWhen": "2023-01-05",
+        "watchedWhere": "Youtube",
+        "synopse": null
+      }
+    ]
+
+- Utilizando o cURL
+
+  curl --location 'http://localhost:8080/movies'
+

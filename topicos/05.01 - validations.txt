@@ -1,0 +1,204 @@
+====================================================================================================
+CURSO API REST QUARKUS - VALIDATIONS
+====================================================================================================
+
+
+Dependência
+----------------------------------------------------------------------------------------------------
+- Adicionar a seguinte dependência
+
+    ...
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
+    ...
+    
+
+Validação
+----------------------------------------------------------------------------------------------------
+- Adicionar a seguinte validação no campo 'title' da classe 'Movie'
+
+  ...
+  @NotBlank(message = "Title is required")
+  private String title;
+  ...
+
+- Criar o pacote 'com.ctseducare.moviebook.validation'
+
+- Criar a classe 'FieldError' dentro no pacote 'com.ctseducare.moviebook.validation'
+
+  public class FieldError {
+
+    private String field;
+    private String error;
+    
+    public FieldError(String field, String error) {
+	this.field = field;
+	this.error = error;
+    }
+    
+    // Getters and Setters
+    
+  }
+
+- Criar a classe 'ValidationErrorResponse' dentro do pacote 'com.ctseducare.moviebook.validation'
+
+  public class ValidationErrorResponse {
+
+    private String message;
+    private Collection<FieldError> errors;
+
+    public ValidationErrorResponse(String message, Collection<FieldError> errors) {
+      this.message = message;
+      this.errors = errors;
+    }
+    
+    // Getters and setter  
+
+- Criar a classe 'ValidationErrorHelper' dentro do pacote 'com.ctseducare.moviebook.validation'
+
+  import java.util.List;
+  import java.util.Set;
+  import java.util.stream.Collectors;
+
+  import jakarta.validation.ConstraintViolation;
+
+  public class ValidationErrorHelper {
+	
+    public static <T> ValidationErrorResponse createFrom(Set<ConstraintViolation<T>> violations) {
+        List<FieldError> errors = violations
+                .stream()
+                .map(cv -> new FieldError(cv.getPropertyPath().toString(), cv.getMessage()))
+                .collect(Collectors.toList());
+
+        return new ValidationErrorResponse("Validation Error", errors);
+    }
+
+  }
+
+- Ajustar o método 'insert' na classe 'MovieResource' da seguinte forma
+
+    ...
+    @POST
+    public Response insert(Movie movie) {
+    	Set<ConstraintViolation<Movie>> violations = validator.validate(movie);
+    	if (violations.isEmpty()) {
+            service.insert(movie);
+            return Response.status(Status.CREATED).entity(movie).build();
+    	}
+        ValidationErrorResponse ver = ValidationErrorHelper.createFrom(violations);
+        return Response.status(Status.BAD_REQUEST).entity(ver).build();
+    }
+    ...
+
+- Ajustar o método 'update' na classe 'MovieResource' da seguinte forma
+
+    ...
+    @PUT
+    public Response update(Movie movie) {
+    	Set<ConstraintViolation<Movie>> violations = validator.validate(movie);
+    	if (violations.isEmpty()) {
+    	  try {
+    	      service.update(movie);
+    	      return Response.noContent().build();
+    	  } catch (ResourceNotFoundException e) {
+    	      ExceptionResponse er = new ExceptionResponse(Status.NOT_FOUND.getStatusCode(), e.getMessage());
+    	      return Response.status(er.getError()).entity(er).build();
+    	  }
+    	}
+        ValidationErrorResponse ver = ValidationErrorHelper.createFrom(violations);
+        return Response.status(Status.BAD_REQUEST).entity(ver).build();
+    }
+    ...
+
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Enviar uma requisição POST com um payload onde o campo 'title' seja nulo ou em branco.
+
+    RESPOSTA:
+  
+    {
+      "message": "Validation Error",
+      "errors": [
+        {
+          "field": "title",
+          "error": "Title is required"
+        }
+      ]
+    }
+  
+
+Mais validações
+----------------------------------------------------------------------------------------------------
+- Adicionar as seguintes validações na classe 'Movie'
+
+    ...
+    @Column(name = "genre", length = 60, nullable = false)
+    @NotBlank(message = "Genre is required")
+    private String genre;
+
+    @Column(name = "year", nullable = false)
+    @NotNull(message = "Year is required")
+    private Integer year;
+
+    @Column(name = "main_actor", length = 80, nullable = false)
+    @NotBlank(message = "Main Actor is required")
+    private String mainActor;
+    
+    @Column(name = "watched_when", nullable = false)
+    @NotNull(message = "Watched When is required")
+    private LocalDate watchedWhen;
+
+    @Column(name = "watched_where", length = 20, nullable = false)
+    @NotNull(message = "Watched Where is required")
+    private String watchedWhere;
+    ...
+
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Enviar uma requisição POST com um payload vazio.
+
+    RESPOSTA:
+  
+    {
+      "message": "Validation Error",
+      "errors": [
+        {
+            "field": "mainActor",
+            "error": "Main Actor is required"
+        },
+        {
+            "field": "year",
+            "error": "Year is required"
+        },
+        {
+            "field": "watchedWhere",
+            "error": "Watched Where is required"
+        },
+        {
+            "field": "title",
+            "error": "Title is required"
+        },
+        {
+            "field": "genre",
+            "error": "Genre is required"
+        },
+        {
+            "field": "watchedWhen",
+            "error": "Watched When is required"
+        }
+      ]
+    }
+
+

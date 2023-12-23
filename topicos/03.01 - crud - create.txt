@@ -1,0 +1,119 @@
+====================================================================================================
+CURSO API REST QUARKUS - CRUD - CREATE
+====================================================================================================
+
+
+Dependências
+----------------------------------------------------------------------------------------------------
+- Adicionar a dependência
+
+  ...
+  <dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+  </dependency>
+  ..
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.service'
+
+- Criar o arquivo 'MovieService.java'
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
+@ApplicationScoped
+public class MovieService {
+
+    @Inject
+    MovieRepository repository;
+      
+    @Transactional
+    public void create(Movie movie) {
+        repository.persist(movie);
+    }
+    
+}
+
+
+Resource
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.resource'
+
+- Criar o arquivo 'MovieResource.java'
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+
+@Path("/movies")
+public class MovieResource {
+	
+    @Inject
+    MovieService service;
+
+    @POST
+    public Response create(Movie movie) {
+    	service.create(movie);
+        return Response.status(Status.CREATED).entity(movie).build();
+    }
+
+}
+
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Criar uma requisição POST
+
+    URL:
+  
+      http://localhost:8080/movies
+  
+    Payload:
+  
+      {
+        "title": "Momentum",
+        "genre": "Ação",
+        "year": 2015,
+        "mainActor": "Olga Kurylenko",
+        "watchedWhen": "2023-01-05",
+        "watchedWhere": "Youtube",
+        "synopse": null
+      }
+
+    Resposta:
+  
+      {
+        "id": 1,
+        "title": "Momentum",
+        "genre": "Ação",
+        "year": 2015,
+        "mainActor": "Olga Kurylenko",
+        "watchedWhen": "2023-01-05",
+        "watchedWhere": "Youtube",
+        "synopse": null
+      }
+
+- Utilizando o cURL
+
+  curl --location 'http://localhost:8080/movies' \
+       --header 'Content-Type: application/json' \
+       --data ' {
+           "title": "Momentum",
+           "genre": "Ação",
+           "year": 2015,
+           "mainActor": "Olga Kurylenko",
+           "watchedWhen": "2023-01-05",
+           "watchedWhere": "Youtube",
+           "synopse": null
+         }'
+

@@ -1,0 +1,169 @@
+====================================================================================================
+CURSO API REST QUARKUS - SWAGGER
+====================================================================================================
+
+
+Dependência
+----------------------------------------------------------------------------------------------------
+- Adicionar a dependência
+
+    ...
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    ...
+
+
+Customizando as informações gerais da API
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.movie.config'
+
+- Criar a classe 'OpenAPIConfig.java'
+
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.info.Contact;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
+import org.eclipse.microprofile.openapi.annotations.info.License;
+import org.eclipse.microprofile.openapi.annotations.servers.Server;
+
+import jakarta.ws.rs.core.Application;
+
+@OpenAPIDefinition(
+  info = @Info(
+    title = "API para gerenciamento de filmes assistidos",
+    description = "Esta API disponibiliza recursos para gerenciamento de filmes assistidos.",
+    version = "1.0.0",
+    contact = @Contact(
+      name = "Eros Vitor Bornatowski",
+      email = "erosborna@gmail.com",
+      url = "https://github.com/erosvitor"
+    ),
+    license = @License(
+      name = "MIT License",
+      url = "https://choosealicense.com/licenses/mit/"
+    ),
+    termsOfService = "https://www.ctseducare.com/terms"
+  ),
+  servers = {
+    @Server(url = "http://localhost:8080")
+  })
+public class OpenAPIConfig extends Application {
+
+}
+
+
+Customizando o nome da API
+----------------------------------------------------------------------------------------------------
+- Acrescentar a seguinte linha abaixo da annotation @Path na classe MovieResource
+
+  @Tag(name = "Movies", description = "Registro, Listagem, Alteração e Remoção de filmes assistidos")
+
+
+Customizando os media types dos endpoints
+----------------------------------------------------------------------------------------------------
+- Adicionar os media types para cada um dos endpoints da classe 'MovieResource.java' conforme abaixo
+
+  ...
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+      
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  ...
+
+
+Customizando a descrição dos endpoints
+----------------------------------------------------------------------------------------------------
+- Alterar os verbos da classe 'MovieResource.java' conforme abaixo
+
+  ...
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Registra um filme assistido", description = "Após o filme ser registrado é retornado os dados do filme com o identificador preenchido.")
+  ...
+    
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Lista filmes registrados.", description = "Listagem dos filmes previamente registrados.")
+  ...
+    
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Altera dados de um filme", description = "Após os dados serem alterados é retornado o status 200 sem conteúdo.")
+  ...
+    
+  @DELETE
+  @Path("/{id}")
+  @Operation(summary = "Remove um filme", description="Após o filme ser removido é retornado o status 200 sem conteúdo.")
+  ...
+
+
+Customizando a resposta dos endpoints
+----------------------------------------------------------------------------------------------------
+- Alterar os verbos da classe 'MovieResource.java' conforme abaixo
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Registra um filme assistido", description = "Após o filme ser registrado é retornado os dados do filme com o identificador preenchido.")
+    @APIResponses(
+      value = {
+        @APIResponse(responseCode = "201", description = "Dados do filme com o identificador preenchido", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Movie.class))),
+        @APIResponse(responseCode = "400", description = "Erro informando problemas com os dados da requisição", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ValidationErrorResponse.class)))
+    })
+    ...
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Lista filmes registrados.", description = "Listagem dos filmes previamente registrados.")
+    @APIResponse(responseCode = "200", description = "Lista contendo os filmes", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Movie.class, type = SchemaType.ARRAY)))
+    ...
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Altera dados de um filme", description = "Após os dados serem alterados é retornado o status 200 sem conteúdo.")
+    @APIResponses(
+      value = {
+        @APIResponse(responseCode = "200"),
+        @APIResponse(responseCode = "400", description = "Erro informando problemas com os dados da requisição", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ValidationErrorResponse.class))),
+        @APIResponse(responseCode = "404", description = "Erro informando que o filme não existe", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ExceptionResponse.class)))
+    })
+    ...
+    
+    @DELETE
+    @Path("/{id}")
+    @Operation(summary = "Remove um filme", description="Após o filme ser removido é retornado o status 200 sem conteúdo.")
+    @APIResponses(
+      value = {
+        @APIResponse(responseCode = "200"),
+        @APIResponse(responseCode = "404", description = "Erro informando que o filme não existe", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ExceptionResponse.class)))
+    })
+    ...
+
+
+Swagger em modo produção
+----------------------------------------------------------------------------------------------------
+- Acrescentar a seguinte linha no arquivo 'application.properties'
+
+  ...
+  quarkus.swagger-ui.always-include=true
+  ...
+
+  Obs: Por padrão o Quarkus exibe a documentação Swagger apenas no modo DEV ou TEST
+
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando algum navegador de Internet, acessar o endereço
+
+  http://localhost:8080/q/swagger-ui/
+
+

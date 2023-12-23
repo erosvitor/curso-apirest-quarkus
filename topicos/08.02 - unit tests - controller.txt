@@ -1,0 +1,243 @@
+====================================================================================================
+CURSO API REST QUARKUS - UNIT TESTS - CONTROLLER
+====================================================================================================
+
+
+Ajustes
+
+- Ajustar o método 'insert' da classe 'MovieService' para que seja retornado o filme
+
+    ... 
+    @Transactional
+    public Movie insert(Movie movie) {
+        repository.persist(movie);
+        return movie;
+    }
+    ...
+
+- Ajustar o método 'insert' da classe 'MovieResource' da seguinte forma
+
+    ... 
+    public Response insert(Movie movie) {
+    	Set<ConstraintViolation<Movie>> violations = validator.validate(movie);
+    	if (violations.isEmpty()) {
+        	Movie result = service.insert(movie);
+            return Response.status(Status.CREATED).entity(result).build();
+    	}
+        ValidationErrorResponse ver = ValidationErrorHelper.createFrom(violations);
+        return Response.status(Status.BAD_REQUEST).entity(ver).build();
+    }
+    ...
+
+- Ajustar o método 'update' da classe 'MovieService' para que seja retornado o filme
+
+    @Transactional
+    public Movie update(Movie movie) throws ResourceNotFoundException {
+    	Movie movieFound = repository.findById(movie.getId().longValue());
+    	if (movieFound == null) {
+    		logger.error("Movie does not exist!");
+    		throw new ResourceNotFoundException("Movie does not exist!"); 
+    	}
+    	
+        movieFound.setTitle(movie.getTitle());
+        movieFound.setGenre(movie.getGenre());
+        movieFound.setYear(movie.getYear());
+        movieFound.setMainActor(movie.getMainActor());
+        movieFound.setWatchedWhen(movie.getWatchedWhen());
+        movieFound.setWatchedWhere(movie.getWatchedWhere());
+        movieFound.setSynopse(movie.getSynopse());
+        
+        return movieFound;
+    }
+
+- Ajustar o método 'delete' da classe 'MovieService' para que seja retornado o filme deletado
+
+    @Transactional
+    public Movie delete(Integer id) throws ResourceNotFoundException {
+    	Movie movieFound = repository.findById(id.longValue());
+    	if (movieFound == null) {
+    		logger.error("Movie does not exist!");
+    		throw new ResourceNotFoundException("Movie does not exist!"); 
+    	}
+        repository.deleteById(id.longValue());
+        return movieFound;
+    }
+
+
+Pacote
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.unittest.resource' no folder 'src/test/java'
+
+
+Base para testes
+----------------------------------------------------------------------------------------------------
+- Criar a classe 'MovieResourceTest.java' dentro o pacote 'com.ctseducare.moviebook.unittest.resource'
+
+@QuarkusTest
+public class MovieResourceTest {
+
+	@InjectMock
+	MovieService service;
+	
+	@Inject
+	MovieResource resource;
+
+}
+
+
+Teste unitário para o método 'insert' (POST)
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testPost() throws Exception {
+		Movie movieToInsert = new Movie();
+		movieToInsert.setTitle("Momentum");
+		movieToInsert.setGenre("Ação");
+		movieToInsert.setYear(2015);
+		movieToInsert.setMainActor("Olga Kurylenko");
+		movieToInsert.setWatchedWhen(LocalDate.of(2023, 1, 5));
+		movieToInsert.setWatchedWhere("YouTube");
+		movieToInsert.setSynopse(null);
+
+		Movie movieInserted = new Movie();
+		movieInserted.setId(1);
+		movieInserted.setTitle("Momentum");
+		movieInserted.setGenre("Ação");
+		movieInserted.setYear(2015);
+		movieInserted.setMainActor("Olga Kurylenko");
+		movieInserted.setWatchedWhen(LocalDate.of(2023, 1, 5));
+		movieInserted.setWatchedWhere("YouTube");
+		movieInserted.setSynopse(null);
+		
+		Mockito.when(service.insert(movieToInsert)).thenReturn(movieInserted);
+
+		Response response = resource.insert(movieToInsert);
+	        Movie m = (Movie)response.getEntity();
+
+		assertNotNull(response);
+	        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+	        assertEquals(1, m.getId());
+	}
+
+
+Teste unitário para o método 'insert' (POST) com falha nos dados
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testPostWithDataValidationFailure() throws Exception {
+		Movie movieToInsert = new Movie();
+
+		Response response = resource.insert(movieToInsert);
+		ValidationErrorResponse ver = (ValidationErrorResponse)response.getEntity();
+
+		assertNotNull(response);
+	        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+	        assertEquals("Validation Error", ver.getMessage());
+	        assertNotNull(ver.getErrors());
+
+	}
+	
+
+Teste unitário para o método 'findAll' (GET)
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testGet() throws Exception {
+		Movie movie = new Movie();
+          	movie.setId(1);
+		movie.setTitle("Momentum");
+		movie.setGenre("Ação");
+		movie.setYear(2015);
+		movie.setMainActor("Olga Kurylenko");
+		movie.setWatchedWhen(LocalDate.of(2023, 1, 5));
+		movie.setWatchedWhere("YouTube");
+		movie.setSynopse(null);
+		
+		List<Movie> movies = Arrays.asList(movie);
+		
+		Mockito.when(service.findAll()).thenReturn(movies);
+		
+		Response response = resource.findAll();
+		
+		assertNotNull(response);
+		assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+		assertEquals(1, ((List<Movie>)response.getEntity()).size());
+	}
+
+
+Teste unitário para o método 'update' (PUT)
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testPut() throws Exception {
+		Movie movieToUpdate = new Movie();
+		movieToUpdate.setId(1);
+		movieToUpdate.setTitle("Momentum");
+		movieToUpdate.setGenre("Ação");
+		movieToUpdate.setYear(2015);
+		movieToUpdate.setMainActor("Olga Kurylenko");
+		movieToUpdate.setWatchedWhen(LocalDate.of(2023, 1, 5));
+		movieToUpdate.setWatchedWhere("YouTube");
+		movieToUpdate.setSynopse("Excelente filme");
+
+		Response response = resource.update(movieToUpdate);
+		
+		assertNotNull(response);
+		assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+	}
+
+
+Teste unitário para o método 'update' (PUT) com filme não existente
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testPutWithMovieDoesNotExist() throws Exception {
+		Movie movieToUpdate = new Movie();
+		movieToUpdate.setId(2);
+		movieToUpdate.setTitle("Momentum");
+		movieToUpdate.setGenre("Ação");
+		movieToUpdate.setYear(2015);
+		movieToUpdate.setMainActor("Olga Kurylenko");
+		movieToUpdate.setWatchedWhen(LocalDate.of(2023, 1, 5));
+		movieToUpdate.setWatchedWhere("YouTube");
+		movieToUpdate.setSynopse(null);
+		
+		Mockito.when(service.update(movieToUpdate)).thenThrow(new ResourceNotFoundException("Movie does not exist!"));
+		
+		Response response = resource.update(movieToUpdate);
+		ExceptionResponse er = (ExceptionResponse)response.getEntity();
+		
+		assertNotNull(response);
+		assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+		assertEquals("Movie does not exist!", er.getReason());
+	}
+
+
+Teste unitário para o método 'delete' (DELETE)
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testDelete() throws Exception {
+		Response response = resource.delete(1);
+		
+		assertNotNull(response);
+		assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+	}
+
+
+Teste unitário para o método 'delete' (DELETE) com filme não existente
+----------------------------------------------------------------------------------------------------
+
+	@Test
+	void testDeleteWithTaskDoesNotExist() throws Exception {
+		int id = 2;
+		
+		Mockito.when(service.delete(id)).thenThrow(new ResourceNotFoundException("Movie does not exist!"));
+		
+		Response response = resource.delete(id);
+		
+		assertNotNull(response);
+		assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+	}
+
+

@@ -1,0 +1,83 @@
+====================================================================================================
+CURSO API REST QUARKUS - CRUD - UPDATE
+====================================================================================================
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'update' no arquivo 'MovieService.java'
+
+    ...
+    @Transactional
+    public void update(Movie movie) {
+    	Movie movieFound = repository.findById(movie.getId().longValue());
+        movieFound.setTitle(movie.getTitle());
+        movieFound.setGenre(movie.getGenre());
+        movieFound.setYear(movie.getYear());
+        movieFound.setMainActor(movie.getMainActor());
+        movieFound.setWatchedWhen(movie.getWatchedWhen());
+        movieFound.setWatchedWhere(movie.getWatchedWhere());
+        movieFound.setSynopse(movie.getSynopse());
+        
+        // Tip: Is not necessary call persist method because the 'update' method is annotated as @Transactional
+    }
+    ...
+    
+
+Controller
+----------------------------------------------------------------------------------------------------
+- Adicionar o endpoint 'update' na classe 'MovieController'
+
+    ...
+    @PUT
+    public Response update(Movie movie) {
+    	service.update(movie);
+        return Response.noContent().build();
+    }
+    ...
+    
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Criar uma requisição PUT
+
+    URL:
+  
+      http://localhost:8080/movies
+   
+    Payload:
+  
+      {
+        "id": 1,
+        "title": "Momentum",
+        "genre": "Ação",
+        "year": 2015,
+        "mainActor": "Olga Kurylenko",
+        "watchedWhen": "2023-01-05",
+        "watchedWhere": "Youtube",
+        "synopse": "Excelente filme"
+      }
+
+    Resposta:
+  
+      204 No Content
+
+- Utilizando o cURL
+
+  curl --location --request PUT 'http://localhost:8080/tasks' \
+       --header 'Content-Type: application/json' \
+       --data ' {
+           "id": 1,
+           "title": "Momentum",
+           "genre": "Ação",
+           "year": 2015,
+           "mainActor": "Olga Kurylenko",
+           "watchedWhen": "2023-01-05",
+           "watchedWhere": "Youtube",
+           "synopse": "Excelente filme"
+        }'
+

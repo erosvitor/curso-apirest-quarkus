@@ -1,0 +1,140 @@
+====================================================================================================
+CURSO API REST QUARKUS - EXCEPTIONS
+====================================================================================================
+
+
+Exceção
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.exception'
+
+- Criar o arquivo 'ResourceNotFoundException.java'
+
+public class ResourceNotFoundException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    public ResourceNotFoundException(String exception) {
+        super(exception);
+    }
+
+}
+
+
+Response
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.exception.response'
+
+- Criar o arquivo 'ExceptionResponse.java'
+
+public class ExceptionResponse implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private int error;
+    private String reason;
+
+    public ExceptionResponse(int error, String reason) {
+        this.error = error;
+        this.reason = reason;
+    }
+
+    public int getError() {
+        return error;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+}
+
+
+Service
+----------------------------------------------------------------------------------------------------
+- Alterar o método 'update' na classe 'MovieService' conforme abaixo
+
+    ...
+    @Transactional
+    public void update(Movie movie) throws ResourceNotFoundException {
+    	Movie movieFound = repository.findById(movie.getId().longValue());
+    	
+    	if (movieFound == null) {
+    		throw new ResourceNotFoundException("Movie does not exist!"); 
+    	}
+    	
+        movieFound.setTitle(movie.getTitle());
+        movieFound.setGenre(movie.getGenre());
+        movieFound.setYear(movie.getYear());
+        movieFound.setMainActor(movie.getMainActor());
+        movieFound.setWatchedWhen(movie.getWatchedWhen());
+        movieFound.setWatchedWhere(movie.getWatchedWhere());
+        movieFound.setSynopse(movie.getSynopse());
+        
+        // Tip: Is not necessary call persist method because the 'update' method is annotated as @Transactional
+    }
+    ...
+
+
+- Alterar o método 'delete' na classe 'MovieService' conforme abaixo
+
+    ...
+    @Transactional
+    public void delete(Integer id) throws ResourceNotFoundException {
+    	Movie movieFound = repository.findById(id.longValue());
+    	if (movieFound == null) {
+    	    throw new ResourceNotFoundException("Movie does not exist!"); 
+    	}
+        repository.deleteById(id.longValue());
+    }
+    ...
+
+
+Resource
+----------------------------------------------------------------------------------------------------
+- Alterar o método 'update' na classe 'MovieResource' conforme abaixo
+
+    ...
+    @PUT
+    public Response update(Movie movie) {
+    	try {
+     	    service.update(movie);
+    	    return Response.noContent().build();
+    	} catch (ResourceNotFoundException e) {
+    	    ExceptionResponse er = new ExceptionResponse(Status.NOT_FOUND.getStatusCode(), e.getMessage());
+    	    return Response.status(er.getError()).entity(er).build();
+    	}
+    }
+    ...
+
+- Alterar o método 'delete' na classe 'MovieResource' conforme abaixo
+
+    ...
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") Integer id) {
+    	try {
+       	    service.delete(id);
+            return Response.noContent().build();
+    	} catch (ResourceNotFoundException e) {
+	    ExceptionResponse er = new ExceptionResponse(Status.NOT_FOUND.getStatusCode(), e.getMessage());
+            return Response.status(er.getError()).entity(er).build();
+    	}
+    }
+    ...
+    
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Realizar uma requisição para excluir um filme que não existe
+
+    Obs: O usuário receberá a seguinte resposta:
+  
+      {
+        "error": 404,
+        "reason": "Movie does not exist!"
+      }
+

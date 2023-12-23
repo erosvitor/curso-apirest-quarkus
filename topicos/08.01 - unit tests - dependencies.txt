@@ -1,0 +1,24 @@
+====================================================================================================
+CURSO API REST QUARKUS - UNIT TESTS - DEPENDENCIES
+====================================================================================================
+
+
+Dependência
+----------------------------------------------------------------------------------------------------
+- Adicionar a dependência
+
+    ...
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>	
+    ...
+
+  Obs: Estas dependências são incluídas automaticamente quando o projeto é criado através das 
+       ferramentas Maven, Gradle ou Quarkus Initializer

@@ -1,0 +1,55 @@
+====================================================================================================
+CURSO API REST QUARKUS - CRUD - DELETE
+====================================================================================================
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'delete' no arquivo 'MovieService.java'
+
+    ...
+    @Transactional
+    public void delete(Integer id) {
+        repository.deleteById(id.longValue());
+    }
+    ...
+    
+
+Controller
+----------------------------------------------------------------------------------------------------
+- Adicionar o endpoint 'delete' na classe 'MovieController'
+
+    ...
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") Integer id) {
+        service.delete(id);
+        return Response.noContent().build();
+    }
+    ...
+    
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Criar uma requisição DELETE
+
+    URL:
+  
+      http://localhost:8080/movies/{MOVIE-ID}
+  
+    Payload:
+  
+      N.A.
+
+    Resposta:
+  
+      204 No Content
+
+- Utilizando o cURL
+
+  curl --location --request DELETE 'http://localhost:8080/movies/{MOVIE-ID}'
+

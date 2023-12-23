@@ -1,0 +1,158 @@
+====================================================================================================
+CURSO API REST QUARKUS - LOGGING
+====================================================================================================
+
+
+Dependência
+----------------------------------------------------------------------------------------------------
+- Adicionar a dependência do Log4J2
+
+    ...
+    <dependency>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>log4j2-jboss-logmanager</artifactId>
+    </dependency>
+    ...
+
+
+Objeto 'logger'
+----------------------------------------------------------------------------------------------------
+- Criar o objeto 'logger' na classe MovieService
+
+    ...
+    private Logger logger = Logger.getLogger(MovieService.class);
+    ...
+
+- Alterar o método 'update' conforme abaixo
+
+    ...
+    @Transactional
+    public void update(Movie movie) throws ResourceNotFoundException {
+    	Movie movieFound = repository.findById(movie.getId().longValue());
+    	if (movieFound == null) {
+            logger.error("Movie does not exist!");
+	    throw new ResourceNotFoundException("Movie does not exist!"); 
+    	}
+        ...
+    }
+    ...
+
+- Alterar o método 'delete' conforme abaixo
+
+    ...
+    @Transactional
+    public void delete(Integer id) throws ResourceNotFoundException {
+    	Movie movieFound = repository.findById(id.longValue());
+    	if (movieFound == null) {
+	    logger.error("Movie does not exist!");
+	    throw new ResourceNotFoundException("Movie does not exist!"); 
+    	}
+        repository.deleteById(id.longValue());
+    }
+    ...
+
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Realizar a requisição para excluir um filme que não exista
+
+    Obs1: O usuário receberá a seguinte resposta:
+  
+      {
+	"error": 404,
+	"reason": "Movie does not exist!"
+      }
+    
+    Obs2: No console será exibida a seguinte mensagem:
+  
+      2023-12-14 13:20:48,066 ERROR [com.cts.mov.ser.MovieService] (executor-thread-1) Movie does not exist!
+
+
+Customizando as mensagens no console
+----------------------------------------------------------------------------------------------------
+- Adicionar a seguinte linha no arquivo application.properties
+
+  ...
+  quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c: %m%n
+  ...
+  
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Realizar a requisição para excluir um filme que não exista
+
+    Obs1: O usuário receberá a seguinte resposta:
+  
+      {
+	"error": 404,
+	"reason": "Movie does not exist!"
+      }
+    
+    Obs2: No console será exibida a seguinte mensagem:
+  
+      2023-12-14 13:52:21.491 ERROR com.ctseducare.moviebook.service.MovieService: Movie does not exist!
+
+
+Enviando as mensagens para arquivo em disco
+----------------------------------------------------------------------------------------------------
+- Adicionar as seguintes linhas no arquivo application.properties
+
+  ...
+  quarkus.log.file.enable=true
+  quarkus.log.file.path=/var/log/moviebook/moviebook.log
+  quarkus.log.file.format=%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c: %m%n
+  quarkus.log.file.rotation.rotate-on-boot=false
+  ...
+  
+
+Verificando
+----------------------------------------------------------------------------------------------------
+- Reiniciar a aplicação
+
+- Utilizando o Postman
+
+  - Realizar a requisição para excluir um filme que não exista
+
+    Obs1: O usuário receberá a seguinte resposta:
+  
+      {
+	"error": 404,
+	"reason": "Movie does not exist!"
+      }
+    
+    Obs2: No console será exibida a seguinte mensagem:
+  
+      2023-12-14 14:02:17.604 ERROR com.ctseducare.moviebook.service.MovieService: Movie does not exist!
+
+    Obs3: Será gerado um arquivo chamado 'moviebook.log' no diretório '/var/log/moviebook' contendo as mensagens de erro
+
+
+Rotacionando a geração do arquivo em disco
+----------------------------------------------------------------------------------------------------
+- Adicionar a seguinte linha no arquivo 'application.properties'
+
+  ...
+  quarkus.log.file.rotation.max-file-size=10M
+  ...
+  
+  Obs: O arquivo de log será rotacionado quando o tamanho do arquivo atingir 10MB.
+
+
+Quantidade de arquivos por dia
+----------------------------------------------------------------------------------------------------
+- A quantidade padrão de arquivos por dia é 5. Para alterar essa quantidade pode-se utilizar a
+  configuração 'DefaultRolloverStrategy'
+  
+  ...
+  quarkus.log.file.rotation.max-backup-index=<QUANTIDADE-DESEJADA>
+  ...
+  
+

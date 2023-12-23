@@ -1,0 +1,107 @@
+====================================================================================================
+CURSO API REST QUARKUS - DATABASE
+====================================================================================================
+
+
+Database
+----------------------------------------------------------------------------------------------------
+- Conectar no console do servidor do MySQL e executar os seguintes comandos:
+
+
+CREATE DATABASE moviebook CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci;
+
+USE moviebook;
+
+CREATE TABLE movies (
+  id INTEGER NOT NULL AUTO_INCREMENT,
+  title VARCHAR(80) NOT NULL,
+  genre VARCHAR(60) NOT NULL,
+  year SMALLINT NOT NULL,
+  main_actor VARCHAR(80) NOT NULL,
+  watched_when DATE NOT NULL,
+  watched_where VARCHAR(20) NOT NULL,
+  synopse TEXT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE utf8mb3_general_ci;
+
+
+Dependências
+----------------------------------------------------------------------------------------------------
+- Adicionar a dependência
+
+  ...
+  <dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-jdbc-mysql</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-hibernate-orm-panache</artifactId>
+  </dependency>
+  ...
+
+
+Acesso
+----------------------------------------------------------------------------------------------------
+- Acrescentar no arquivo 'application.properties'
+
+quarkus.datasource.db-kind=mysql 
+quarkus.datasource.jdbc.url=jdbc:mysql://localhost:3306/moviebook
+quarkus.datasource.jdbc.max-size=16
+quarkus.datasource.username=root
+quarkus.datasource.password=root
+
+
+Model
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.model'
+
+- Criar o arquivo 'Movie.java'
+
+@Entity
+@Table(name = "movies")
+public class Movie implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
+
+    @Column(name = "title", length = 80, nullable = false)
+    private String title;
+
+    @Column(name = "genre", length = 60, nullable = false)
+    private String genre;
+
+    @Column(name = "year", nullable = false)
+    private Integer year;
+
+    @Column(name = "main_actor", length = 80, nullable = false)
+    private String mainActor;
+    
+    @Column(name = "watched_when", nullable = false)
+    private LocalDate watchedWhen;
+
+    @Column(name = "watched_where", length = 20, nullable = false)
+    private String watchedWhere;
+
+    @Column(name = "synopse", nullable = true)
+    private String synopse;
+    
+    // Getters and Setters
+    
+}
+
+
+Repository
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.moviebook.repository'
+
+- Criar o arquivo 'MovieRepository.java'
+
+@ApplicationScoped
+public class MovieRepository implements PanacheRepository<Movie> {
+
+}
+
+

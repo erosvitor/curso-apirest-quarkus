@@ -1,0 +1,74 @@
+====================================================================================================
+CURSO API REST QUARKUS - DEPLOY - TRADITIONAL UBUNTU SERVER
+====================================================================================================
+
+
+Preparando o servidor
+----------------------------------------------------------------------------------------------------
+- Instalar a versão desejada do Ubuntu Server numa máquina física ou virtual
+
+- Atualizar o sistema operacional
+
+  $ sudo apt update
+  $ sudo apt update
+
+- Instalar o servidor de SSH
+
+  $ sudo apt install openssh-server
+
+  Obs: O servidor SSH será utilizado para transferência de arquivos
+  
+
+Preparando o banco de dados
+----------------------------------------------------------------------------------------------------
+- Instalar o MySQL Server 8.x
+
+- Criar o banco de dados
+
+CREATE DATABASE moviebook CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci;
+
+USE moviebook;
+
+CREATE TABLE movies (
+  id INTEGER NOT NULL AUTO_INCREMENT,
+  title VARCHAR(80) NOT NULL,
+  genre VARCHAR(60) NOT NULL,
+  year SMALLINT NOT NULL,
+  main_actor VARCHAR(80) NOT NULL,
+  watched_when DATE NOT NULL,
+  watched_where VARCHAR(20) NOT NULL,
+  synopse TEXT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE utf8mb3_general_ci;
+
+
+Preparando o Java
+----------------------------------------------------------------------------------------------------
+- Instalar o Oracle JRE 17 ou OpenJDK JRE 17
+
+
+Disponibilizando a aplicação
+----------------------------------------------------------------------------------------------------
+- Criar o diretório /opt/moviebook
+
+- Transferir target/quarkus-app/lib/ para /opt/moviebook/lib
+
+- Transferir target/quarkus-app/quarkus-run.jar para /opt/moviebook
+
+- Transferir target/quarkus-app/app/ para /opt/moviebook/app
+
+- Transferir target/quarkus-app/quarkus/ para /opt/moviebook/quarkus
+
+- Criar o diretório de logs da aplicação
+
+  $ sudo mkdir /var/log/moviebook
+  $ chown $USER:$USER /var/log/moviebook
+
+- Executar a aplicação com o comando abaixo
+
+  java -jar /opt/moviebook/quarkus-run.jar
+      
+- Acessar documentação Swagger
+
+  http://<ip-servidor>:8080/q/swagger-ui
+

@@ -1,0 +1,37 @@
+====================================================================================================
+CURSO API REST QUARKUS - CODE COVERAGE - SUREFIRE REPORT
+====================================================================================================
+
+
+Plugin Surefire Report para Maven
+----------------------------------------------------------------------------------------------------
+- Adicionar a seguinte linha dentro das configurações do plugin 'maven-surefire-plugin' no 'pom.xml'
+
+  ...
+  <testFailureIgnore>true</testFailureIgnore>
+  ...
+
+- Adicionar o seguinte plugin 
+
+      <plugin>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${surefire-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+
+Exportando o relatório gerado pelo Surefire Report
+----------------------------------------------------------------------------------------------------
+- Para exportar 
+
+  $ mvn test
+  
+  OBS: O relatório será gerado no diretório 'site' dentro da pasta 'target'
+

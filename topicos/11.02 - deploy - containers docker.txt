@@ -1,0 +1,144 @@
+====================================================================================================
+CURSO API REST QUARKUS - DEPLOY - CONTAINERS DOCKER
+====================================================================================================
+
+
+Configurando Dockerfile para construir a aplicação
+----------------------------------------------------------------------------------------------------
+- Criar o folder 'docker' dentro da pasta 'src/main'
+
+- Criar o arquivo 'Dockerfile.jvm' dentro da pasta 'src/main/docker'
+
+
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.18
+
+ENV LANGUAGE='en_US:en'
+
+# We make four distinct layers so if there are application changes the library layers can be re-used
+COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=185 target/quarkus-app/*.jar /deployments/
+COPY --chown=185 target/quarkus-app/app/ /deployments/app/
+COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8080
+USER 185
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
+
+
+  Obs: O folder 'src/main/docker' e o conteúdo do arquivo 'Dockerfile.jvm' segue o padrão utilizado pelas
+       ferramentas Maven, Gradle e Quarkus Initializer quando utilizados para criar a estrutura básica do
+       projeto.
+
+
+Preparando script do banco de dados para o Docker Compose
+----------------------------------------------------------------------------------------------------
+- Criar o diretório 'database' na raiz do projeto 'src/main'
+
+- Criar o arquivo 'moviebook.sql' dentro do diretório 'src/main/database'
+
+CREATE DATABASE moviebook CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci;
+
+USE moviebook;
+
+CREATE TABLE movies (
+  id INTEGER NOT NULL AUTO_INCREMENT,
+  title VARCHAR(80) NOT NULL,
+  genre VARCHAR(60) NOT NULL,
+  year SMALLINT NOT NULL,
+  main_actor VARCHAR(80) NOT NULL,
+  watched_when DATE NOT NULL,
+  watched_where VARCHAR(20) NOT NULL,
+  synopse TEXT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE utf8mb3_general_ci;
+
+
+Preparando o arquivo docker-compose.yml
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'docker-compose.yml' na raiz do projeto
+
+version: '3.9'
+networks:
+  moviebook:
+    driver: bridge
+    name: moviebook
+volumes:
+  moviebook:
+services:
+  db:
+    image: mysql:8.0.29
+    container_name: moviebook-db
+    restart: always
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_TCP_PORT: 3308
+    ports:
+      - 3308:3308
+    expose:
+      - 3308
+    networks:
+      - moviebook
+    volumes:
+      - ./src/main/database/moviebook.sql:/docker-entrypoint-initdb.d/0_create.sql
+  app:
+    depends_on:
+      - db
+    build:
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: erosvitor/moviebook
+    container_name: moviebook-app
+    restart: always
+    # Estas propriedades sobrepoem as propriedades no 'application.properties'
+    environment:
+      TZ: America/Sao_Paulo
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:mysql://db:3308/moviebook?useTimezone=true&serverTimezone=UTC
+      QUARKUS_DATASOURCE_USERNAME: root
+      QUARKUS_DATASOURCE_PASSWORD: root
+    ports:
+      - 8080:8080
+    networks:
+      - moviebook
+
+
+Criandos os containers
+----------------------------------------------------------------------------------------------------
+- Criar os containers com o comando abaixo
+
+  $ docker compose up
+
+
+Monitorando os containers
+----------------------------------------------------------------------------------------------------
+- Verificado se os containers foram criados
+
+  $ docker container ls
+
+- Verificando os logs do container do banco de dados
+
+  $ docker logs moviebook-db
+
+- Verificando os logs do container da aplicação
+
+  $ docker logs moviebook-app
+
+- Obtendo o endereço IP do container da aplicação
+
+  $ docker inspect moviebook-app | grep IPAddress
+
+- Acessando a documentação da API
+
+  http://<IP-CONTAINER-APLICACAO>:8080/q/swagger-ui
+
+- Acessando o container do banco de dados
+
+  $ docker exec -it moviebook-db /bin/bash
+
+- Obtendo estatísticas dos containers
+
+  $ docker stats
+
+

@@ -1,0 +1,36 @@
+====================================================================================================
+CURSO API REST QUARKUS - BUILD
+====================================================================================================
+
+
+Plugin
+----------------------------------------------------------------------------------------------------
+- Adicionar o seguinte plugin
+
+  ...
+  <plugin>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>${compiler-plugin.version}</version>
+    <configuration>
+      <compilerArgs>
+        <arg>-parameters</arg>
+      </compilerArgs>
+    </configuration>
+  </plugin>
+  ...
+
+  Obs: Este plugin é incluído automaticamente quando o projeto é criado através das ferramentas
+       Maven, Gradle ou Quarkus Initializer
+
+
+Build
+----------------------------------------------------------------------------------------------------
+- Construir o pacote
+
+  $ mvn package
+
+- Run the application
+
+  $ java -jar ./target/quarkus-app/quarkus-run.jar
+
+

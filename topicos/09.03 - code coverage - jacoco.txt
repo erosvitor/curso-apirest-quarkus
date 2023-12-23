@@ -1,0 +1,24 @@
+====================================================================================================
+CURSO API REST QUARKUS - CODE COVERAGE - JACOCO
+====================================================================================================
+
+
+Plugin Jacoco para Maven
+----------------------------------------------------------------------------------------------------
+- Adicionar no 'pom.xml'
+
+  <dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-jacoco</artifactId>
+    <scope>test</scope>
+  </dependency>
+
+
+Exportando o relatório gerado pelo JaCoCo
+----------------------------------------------------------------------------------------------------
+- Para exportar 
+
+  $ mvn test
+  
+  OBS: O relatório será gerado no diretório 'jacoco-report' dentro da pasta 'target'
+
